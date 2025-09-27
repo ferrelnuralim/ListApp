@@ -126,16 +126,16 @@ if st.button("Generate List"):
         lines.append(f"{title}, {subtitle}\n")
     elif title:
         lines.append(f"{title}\n")
-    counter = 1
-    for d in ordered:
-        lines.append(d)
-        sub = df_all[df_all["Dokter_canon"] == d].copy().sort_values(by=["No_num"], na_position="last")
-        for _, row in sub.iterrows():
-            tail = "✅" if add_check else ""
-            lines.append(f"{counter}\t{row['No. RM']}\t{row['Nama Pasien']}{tail}")
-            counter += 1
-        lines.append(f"*{d}*")
-    final_text = "\n".join(lines).strip() + "\n"
+  counter = 1
+for d in ordered:
+    # Bold untuk WhatsApp (pakai asterisk di kiri-kanan)
+    lines.append(f"*{d}*")
+    sub = df_all[df_all["Dokter_canon"] == d].copy().sort_values(by=["No_num"], na_position="last")
+    for _, row in sub.iterrows():
+        tail = "✅" if add_check else ""
+        lines.append(f"{counter}\t{row['No. RM']}\t{row['Nama Pasien']}{tail}")
+        counter += 1
+    lines.append("")  # spasi antar DPJP
 
     st.text_area("Hasil", final_text, height=400)
     st.download_button("Download TXT", data=final_text.encode("utf-8"), file_name="LIST_PASIEN_POLI_BM.txt", mime="text/plain")
