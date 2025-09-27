@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 import io
 import re
 import pdfplumber
@@ -46,18 +47,30 @@ def map_doctor_to_canonical(name: str) -> str:
         if raw == can:
             return can
     lower = raw.lower()
-    if "tajrin" in lower: return DOCTOR_PRIORITY[0]
-    if "gazali" in lower: return DOCTOR_PRIORITY[1]
-    if "yossy" in lower or "yoanita" in lower: return DOCTOR_PRIORITY[2]
-    if "abul" in lower or "fauzi" in lower: return DOCTOR_PRIORITY[3]
-    if "irfan" in lower and "rasul" in lower: return DOCTOR_PRIORITY[4]
-    if "nurwahida" in lower: return DOCTOR_PRIORITY[5]
-    if "hadira" in lower: return DOCTOR_PRIORITY[6]
-    if "mukhtar" in lower or "anam" in lower: return DOCTOR_PRIORITY[7]
-    if "timurwati" in lower: return DOCTOR_PRIORITY[8]
-    if "husnul" in lower and "basyar" in lower: return DOCTOR_PRIORITY[9]
-    if "husni" in lower and "mubarak" in lower: return DOCTOR_PRIORITY[10]
-    if "carolina" in lower and "stevanie" in lower: return DOCTOR_PRIORITY[11]
+    if "tajrin" in lower:
+        return DOCTOR_PRIORITY[0]
+    if "gazali" in lower:
+        return DOCTOR_PRIORITY[1]
+    if "yossy" in lower or "yoanita" in lower:
+        return DOCTOR_PRIORITY[2]
+    if "abul" in lower or "fauzi" in lower:
+        return DOCTOR_PRIORITY[3]
+    if "irfan" in lower and "rasul" in lower:
+        return DOCTOR_PRIORITY[4]
+    if "nurwahida" in lower:
+        return DOCTOR_PRIORITY[5]
+    if "hadira" in lower:
+        return DOCTOR_PRIORITY[6]
+    if "mukhtar" in lower or "anam" in lower:
+        return DOCTOR_PRIORITY[7]
+    if "timurwati" in lower:
+        return DOCTOR_PRIORITY[8]
+    if "husnul" in lower and "basyar" in lower:
+        return DOCTOR_PRIORITY[9]
+    if "husni" in lower and "mubarak" in lower:
+        return DOCTOR_PRIORITY[10]
+    if "carolina" in lower and "stevanie" in lower:
+        return DOCTOR_PRIORITY[11]
     return raw
 
 def extract_all_tables_from_pdf(file_bytes: bytes) -> pd.DataFrame:
@@ -79,7 +92,7 @@ def extract_all_tables_from_pdf(file_bytes: bytes) -> pd.DataFrame:
                     for r in data_rows:
                         r = [(str(x) if x is not None else "").strip() for x in r]
                         if len(r) < len(header):
-                            r = r + [""]*(len(header)-len(r))
+                            r = r + [""] * (len(header) - len(r))
                         elif len(r) > len(header):
                             r = r[:len(header)]
                         norm.append(r)
@@ -126,16 +139,19 @@ if st.button("Generate List"):
         lines.append(f"{title}, {subtitle}\n")
     elif title:
         lines.append(f"{title}\n")
-  counter = 1
-for d in ordered:
-    # Bold untuk WhatsApp (pakai asterisk di kiri-kanan)
-    lines.append(f"*{d}*")
-    sub = df_all[df_all["Dokter_canon"] == d].copy().sort_values(by=["No_num"], na_position="last")
-    for _, row in sub.iterrows():
-        tail = "✅" if add_check else ""
-        lines.append(f"{counter}\t{row['No. RM']}\t{row['Nama Pasien']}{tail}")
-        counter += 1
-    lines.append("")  # spasi antar DPJP
+
+    counter = 1
+    for d in ordered:
+        # Bold nama DPJP untuk WhatsApp
+        lines.append(f"*{d}*")
+        sub = df_all[df_all["Dokter_canon"] == d].copy().sort_values(by=["No_num"], na_position="last")
+        for _, row in sub.iterrows():
+            tail = "✅" if add_check else ""
+            lines.append(f"{counter}\t{row['No. RM']}\t{row['Nama Pasien']}{tail}")
+            counter += 1
+        lines.append("")
+
+    final_text = "\n".join(lines).strip() + "\n"
 
     st.text_area("Hasil", final_text, height=400)
     st.download_button("Download TXT", data=final_text.encode("utf-8"), file_name="LIST_PASIEN_POLI_BM.txt", mime="text/plain")
