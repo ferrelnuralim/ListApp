@@ -4,11 +4,12 @@ import re
 import pdfplumber
 import pandas as pd
 import streamlit as st
+from datetime import date
 
 st.set_page_config(page_title="Generator List Poli Bedah Mulut", layout="centered")
 
 st.title("Generator List Poli Bedah Mulut")
-st.caption("Upload file PDF (seperti '18 akhir.pdf' / '19sept2025.pdf'), saya buatkan list pasien per DPJP dengan urutan sesuai hierarki.")
+st.caption("Upload file PDF (seperti '18 akhir.pdf' / '19sept2025.pdf'), saya buatkan list pasien per DPJP dengan urutan sesuai hierarki. Tanggal bisa otomatis dari teks 'PERIODE ...' di PDF.")
 
 DOCTOR_PRIORITY = [
     "drg. Andi Tajrin, M.Kes., Sp.B.M.M., Subsp. C.O.M.(K)",
@@ -24,6 +25,12 @@ DOCTOR_PRIORITY = [
     "drg. Husni Mubarak, Sp. B.M.M.",
     "drg. Carolina Stevanie, Sp.B.M.M.",
 ]
+
+MONTHS_ID = {
+    "JANUARI": 1, "FEBRUARI": 2, "MARET": 3, "APRIL": 4, "MEI": 5, "JUNI": 6,
+    "JULI": 7, "AGUSTUS": 8, "SEPTEMBER": 9, "OKTOBER": 10, "NOVEMBER": 11, "DESEMBER": 12
+}
+WD_ID = ["Senin", "Selasa", "Rabu", "Kamis", "Jumat", "Sabtu", "Minggu"]
 
 def normalize_text(s: str) -> str:
     if s is None:
@@ -47,30 +54,18 @@ def map_doctor_to_canonical(name: str) -> str:
         if raw == can:
             return can
     lower = raw.lower()
-    if "tajrin" in lower:
-        return DOCTOR_PRIORITY[0]
-    if "gazali" in lower:
-        return DOCTOR_PRIORITY[1]
-    if "yossy" in lower or "yoanita" in lower:
-        return DOCTOR_PRIORITY[2]
-    if "abul" in lower or "fauzi" in lower:
-        return DOCTOR_PRIORITY[3]
-    if "irfan" in lower and "rasul" in lower:
-        return DOCTOR_PRIORITY[4]
-    if "nurwahida" in lower:
-        return DOCTOR_PRIORITY[5]
-    if "hadira" in lower:
-        return DOCTOR_PRIORITY[6]
-    if "mukhtar" in lower or "anam" in lower:
-        return DOCTOR_PRIORITY[7]
-    if "timurwati" in lower:
-        return DOCTOR_PRIORITY[8]
-    if "husnul" in lower and "basyar" in lower:
-        return DOCTOR_PRIORITY[9]
-    if "husni" in lower and "mubarak" in lower:
-        return DOCTOR_PRIORITY[10]
-    if "carolina" in lower and "stevanie" in lower:
-        return DOCTOR_PRIORITY[11]
+    if "tajrin" in lower: return DOCTOR_PRIORITY[0]
+    if "gazali" in lower: return DOCTOR_PRIORITY[1]
+    if "yossy" in lower or "yoanita" in lower: return DOCTOR_PRIORITY[2]
+    if "abul" in lower or "fauzi" in lower: return DOCTOR_PRIORITY[3]
+    if "irfan" in lower and "rasul" in lower: return DOCTOR_PRIORITY[4]
+    if "nurwahida" in lower: return DOCTOR_PRIORITY[5]
+    if "hadira" in lower: return DOCTOR_PRIORITY[6]
+    if "mukhtar" in lower or "anam" in lower: return DOCTOR_PRIORITY[7]
+    if "timurwati" in lower: return DOCTOR_PRIORITY[8]
+    if "husnul" in lower and "basyar" in lower: return DOCTOR_PRIORITY[9]
+    if "husni" in lower and "mubarak" in lower: return DOCTOR_PRIORITY[10]
+    if "carolina" in lower and "stevanie" in lower: return DOCTOR_PRIORITY[11]
     return raw
 
 def extract_all_tables_from_pdf(file_bytes: bytes) -> pd.DataFrame:
@@ -111,15 +106,74 @@ def extract_all_tables_from_pdf(file_bytes: bytes) -> pd.DataFrame:
     out["No_num"] = pd.to_numeric(out["No."], errors="coerce")
     return out
 
-uploaded_files = st.file_uploader("Upload PDF (bisa lebih dari satu)", type=["pdf"], accept_multiple_files=True)
+PERIODE_REGEX = re.compile(
+    r"PERIODE\s+(\d{1,2})\s+([A-Z]+)\s+(\d{4})",
+    flags=re.IGNORECASE
+)
+
+def _parse_periode_match(day: int, mon_word: str, year: int) -> date | None:
+    m = MONTHS_ID.get(mon_word.upper())
+    if not m:
+        return None
+    try:
+        return date(year, m, day)
+    except Exception:
+        return None
+
+def detect_date_from_pdf_text(file_bytes: bytes) -> date | None:
+    """Cari 'PERIODE 26 SEPTEMBER 2025' di teks PDF (semua halaman)."""
+    with pdfplumber.open(io.BytesIO(file_bytes)) as pdf:
+        for page in pdf.pages:
+            try:
+                text = page.extract_text() or ""
+            except Exception:
+                text = ""
+            m = PERIODE_REGEX.search(text)
+            if m:
+                d = int(m.group(1))
+                mon = m.group(2)
+                y = int(m.group(3))
+                dt = _parse_periode_match(d, mon, y)
+                if dt:
+                    return dt
+    return None
+
+def format_id_date(d: date) -> str:
+    # Python weekday(): Monday=0..Sunday=6 ; Indonesia: Senin..Minggu
+    wd = WD_ID[d.weekday()]
+    return f"{wd}, {d.day:02d}/{d.month:02d}/{d.year}"
+
+uploaded_files = st.file_uploader(
+    "Upload PDF (bisa lebih dari satu)",
+    type=["pdf"],
+    accept_multiple_files=True
+)
 title = st.text_input("Judul (opsional)", "LIST PASIEN POLI BEDAH MULUT")
-subtitle = st.text_input("Subjudul (opsional)", "Jumat, 19/09/2025")
+subtitle = st.text_input("Subjudul (opsional). Kalau kosong & deteksi aktif, akan diisi otomatis dari 'PERIODE ...' di PDF.", "")
+detect_date = st.checkbox("Deteksi tanggal dari PDF (pakai teks 'PERIODE ...')", value=True)
 add_check = st.checkbox("Tambahkan emoji centang (✅) di akhir nama", value=True)
 
 if st.button("Generate List"):
     if not uploaded_files:
         st.warning("Silakan upload minimal 1 file PDF.")
         st.stop()
+
+    # 1) Deteksi tanggal (opsional)
+    detected_dates = []
+    if detect_date:
+        for up in uploaded_files:
+            dt = detect_date_from_pdf_text(up.getvalue())
+            if dt:
+                detected_dates.append(dt)
+        # Hilangkan duplikat (dan jaga urutan)
+        detected_dates = list(dict.fromkeys(detected_dates))
+        if detected_dates:
+            if len(detected_dates) > 1:
+                st.info(f"Terdeteksi beberapa tanggal PERIODE: {', '.join(format_id_date(x) for x in detected_dates)}. Dipakai yang pertama.")
+            if not subtitle.strip():
+                subtitle = format_id_date(detected_dates[0])
+
+    # 2) Ekstraksi tabel
     pieces = []
     for up in uploaded_files:
         df = extract_all_tables_from_pdf(up.getvalue())
@@ -128,12 +182,14 @@ if st.button("Generate List"):
     if not pieces:
         st.error("Tidak menemukan tabel yang sesuai di PDF yang diupload.")
         st.stop()
+
     df_all = pd.concat(pieces, ignore_index=True)
     df_all["Dokter_canon"] = df_all["Dokter"].apply(map_doctor_to_canonical)
 
     doctors_in_data = list(dict.fromkeys(df_all["Dokter_canon"].tolist()))
     ordered = [d for d in DOCTOR_PRIORITY if d in doctors_in_data] + [d for d in doctors_in_data if d not in DOCTOR_PRIORITY]
 
+    # 3) Susun output
     lines = []
     if title and subtitle:
         lines.append(f"{title}, {subtitle}\n")
@@ -142,7 +198,7 @@ if st.button("Generate List"):
 
     counter = 1
     for d in ordered:
-        # Bold nama DPJP untuk WhatsApp
+        # Bold nama DPJP (WhatsApp)
         lines.append(f"*{d}*")
         sub = df_all[df_all["Dokter_canon"] == d].copy().sort_values(by=["No_num"], na_position="last")
         for _, row in sub.iterrows():
@@ -153,5 +209,10 @@ if st.button("Generate List"):
 
     final_text = "\n".join(lines).strip() + "\n"
 
-    st.text_area("Hasil", final_text, height=400)
-    st.download_button("Download TXT", data=final_text.encode("utf-8"), file_name="LIST_PASIEN_POLI_BM.txt", mime="text/plain")
+    st.text_area("Hasil", final_text, height=420)
+    st.download_button(
+        "Download TXT",
+        data=final_text.encode("utf-8"),
+        file_name="LIST_PASIEN_POLI_BM.txt",
+        mime="text/plain"
+    )
