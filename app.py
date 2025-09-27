@@ -134,7 +134,7 @@ if st.button("Generate List"):
             tail = "✅" if add_check else ""
             lines.append(f"{counter}\t{row['No. RM']}\t{row['Nama Pasien']}{tail}")
             counter += 1
-        lines.append("")
+        lines.append(f"*{d}*")
     final_text = "\n".join(lines).strip() + "\n"
 
     st.text_area("Hasil", final_text, height=400)
