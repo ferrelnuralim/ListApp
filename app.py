@@ -12,7 +12,7 @@ st.title("Generator List Poli Bedah Mulut")
 st.caption("Upload file PDF (seperti '18 akhir.pdf' / '19sept2025.pdf'), saya buatkan list pasien per DPJP dengan urutan sesuai hierarki. Tanggal bisa otomatis dari teks 'PERIODE ...' di PDF.")
 
 DOCTOR_PRIORITY = [
-    "drg. Andi Tajrin, M.Kes., Sp.B.M.M., Subsp. C.O.M.(K)",
+    "Dr. drg. Andi Tajrin, M.Kes., Sp.B.M.M., Subsp. C.O.M.(K)",
     "drg. Mohammad Gazali, MARS., Sp.B.M.M., Subsp.T.M.T.M.J.(K)",
     "drg. Yossy Yoanita Ariestiana, M.KG., Sp.B.M.M., Subsp.Ortognat-D (K)",
     "drg. Abul Fauzi, Sp.B.M.M., Subsp.T.M.T.M.J.(K)",
