@@ -12,18 +12,18 @@ st.title("Generator List Poli Bedah Mulut")
 st.caption("Upload file PDF (seperti '18 akhir.pdf' / '19sept2025.pdf'), saya buatkan list pasien per DPJP dengan urutan sesuai hierarki. Tanggal bisa otomatis dari teks 'PERIODE ...' di PDF.")
 
 DOCTOR_PRIORITY = [
-    "Dr. drg. Andi Tajrin, M.Kes., Sp.B.M.M., Subsp. C.O.M.(K)",
-    "drg. Mohammad Gazali, MARS., Sp.B.M.M., Subsp.T.M.T.M.J.(K)",
-    "drg. Yossy Yoanita Ariestiana, M.KG., Sp.B.M.M., Subsp.Ortognat-D (K)",
-    "drg. Abul Fauzi, Sp.B.M.M., Subsp.T.M.T.M.J.(K)",
-    "drg. M. Irfan Rasul, Ph.D., Sp.B.M.M., Subsp.C.O.M.(K)",
-    "drg. Nurwahida, M.K.G., Sp.B.M.M., Subsp.C.O.M(K)",
-    "drg. Hadira, M.K.G., Sp.B.M.M., Subsp.C.O.M(K)",
-    "drg. Mukhtar Nur Anam Sp.B.M.M.",
-    "drg. Timurwati, Sp.B.M.M.",
-    "drg. Husnul Basyar, Sp. B.M.M.",
-    "drg. Husni Mubarak, Sp. B.M.M.",
-    "drg. Carolina Stevanie, Sp.B.M.M.",
+    "Dr. drg. Andi Tajrin, M.Kes., Sp.B.M.Mf., Subsp. C.O.Mf.",
+    "drg. Mohammad Gazali, MARS., Sp.B.M.Mf., Subsp.Tr.Mf.S.Tm.",
+    "drg. Abul Fauzi, Sp.B.M.Mf., Subsp.Tr.Mf.S.Tm.",
+    "drg. M. Irfan Rasul, Ph.D., Sp.B.M.Mf., Subsp.C.O.Mf.",
+    "drg. Yossy Yoanita Ariestiana, M.KG., Sp.B.M.Mf., Subsp.Ortognat.D.",
+    "drg. Nurwahida, M.K.G., Sp.B.M.Mf., Subsp.C.O.Mf.",
+    "drg. Hadira, M.K.G., Sp.B.M.Mf., Subsp.C.O.Mf.",
+    "drg. Mukhtar Nur Anam Sp.B.M.Mf.",
+    "drg. Timurwati, Sp.B.M.Mf.",
+    "drg. Husnul Basyar, Sp. B.M.Mf.",
+    "drg. Husni Mubarak, Sp. B.M.Mf.",
+    "drg. Carolina Stevanie, Sp.B.M.Mf.",
 ]
 
 MONTHS_ID = {
