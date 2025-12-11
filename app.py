@@ -56,9 +56,9 @@ def map_doctor_to_canonical(name: str) -> str:
     lower = raw.lower()
     if "tajrin" in lower: return DOCTOR_PRIORITY[0]
     if "gazali" in lower: return DOCTOR_PRIORITY[1]
-    if "yossy" in lower or "yoanita" in lower: return DOCTOR_PRIORITY[2]
-    if "abul" in lower or "fauzi" in lower: return DOCTOR_PRIORITY[3]
-    if "irfan" in lower and "rasul" in lower: return DOCTOR_PRIORITY[4]
+    if "abul" in lower or "fauzi" in lower: return DOCTOR_PRIORITY[2]
+    if "irfan" in lower and "rasul" in lower: return DOCTOR_PRIORITY[3]
+    if "yossy" in lower or "yoanita" in lower: return DOCTOR_PRIORITY[4]
     if "nurwahida" in lower: return DOCTOR_PRIORITY[5]
     if "hadira" in lower: return DOCTOR_PRIORITY[6]
     if "mukhtar" in lower or "anam" in lower: return DOCTOR_PRIORITY[7]
